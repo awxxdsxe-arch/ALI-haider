@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import compression from 'compression';
 import { GoogleGenAI } from '@google/genai';
 
 dotenv.config();
@@ -11,6 +12,11 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
+
+// High-speed response compression (Gzip / Deflate)
+app.use(compression({
+  threshold: 1024,
+}));
 
 // Security and parser middleware
 app.use(express.json({ limit: '10mb' }));
@@ -344,9 +350,20 @@ app.get('/sitemap.xml', (req, res) => {
 // Setup Vite in Dev or serve build in Prod
 async function startServer() {
   if (process.env.NODE_ENV === 'production') {
-    // Serve production static assets
-    app.use(express.static(path.resolve(__dirname, 'dist')));
+    // Serve production static assets with immutable cache for hashed bundles
+    app.use(
+      express.static(path.resolve(__dirname, 'dist'), {
+        maxAge: '1y',
+        immutable: true,
+        setHeaders: (res, filePath) => {
+          if (filePath.endsWith('.html')) {
+            res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+          }
+        },
+      })
+    );
     app.get('*', (req, res) => {
+      res.setHeader('Cache-Control', 'no-cache, must-revalidate');
       res.sendFile(path.resolve(__dirname, 'dist', 'index.html'));
     });
   } else {
