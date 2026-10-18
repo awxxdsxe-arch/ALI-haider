@@ -1,0 +1,6 @@
+{
+  "name": "Ali Haider — All-in-One Helper",
+  "description": "Free, accessible online utility platform offering PDF tools, image processing, study & learning center, language & writing assistance, everyday calculators, and digital guides.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
